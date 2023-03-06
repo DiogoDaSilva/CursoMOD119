@@ -25,16 +25,30 @@ namespace CursoMOD119.Controllers
         {
             if (_context.Items == null)
             {
-                Problem("Entity set 'ApplicationDbContext.Items'  is null.");
+                return Problem("Entity set 'ApplicationDbContext.Items'  is null.");
             }
 
-            
+
             ViewData["SearchName"] = searchName;
 
-            var itemsSql = from i in _context.Items select i;
+            IQueryable<Item> itemsSql = _context.Items;
+
+            int priceSearch = 0;
+            var priceSearchIsInt = false;
+
+            priceSearchIsInt = int.TryParse(searchName, out priceSearch);
 
 
-            if (!string.IsNullOrEmpty(searchName))
+            // Check Predicate Builder
+            // var predicateBuilder = PredicateBuilder.False<Item>();
+            // if () {
+            // predicate = predicate.Or(i => i.Name.Contains(searchName));
+            // }
+
+            if (!string.IsNullOrEmpty(searchName) && priceSearchIsInt)
+            {
+                itemsSql = itemsSql.Where(i => i.Name.Contains(searchName) || i.Price == int.Parse(searchName));
+            } else if(!string.IsNullOrEmpty(searchName))
             {
                 itemsSql = itemsSql.Where(i => i.Name.Contains(searchName));
             }
