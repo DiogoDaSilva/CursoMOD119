@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CursoMOD119.Data;
 using CursoMOD119.Models;
+using CursoMOD119.Lib;
 
 namespace CursoMOD119.Controllers
 {
@@ -20,11 +21,67 @@ namespace CursoMOD119.Controllers
         }
 
         // GET: Clients
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sort, string searchName, int? pageNumber)
         {
-              return _context.Client != null ? 
-                          View(await _context.Client.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Client'  is null.");
+            if (_context.Client == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Client'  is null.");
+            }
+
+            ViewData["SearchName"] = searchName;
+            ViewData["PageNumber"] = pageNumber ?? 1;
+
+
+            IQueryable<Client> clientsSql = _context.Client;
+
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                clientsSql = clientsSql.Where(c => c.Name.Contains(searchName) || c.Email.Contains(searchName)
+                    || c.Birthday.ToString().Contains(searchName));
+            }
+
+
+            switch (sort)
+            {
+                case "name_desc":
+                    clientsSql = clientsSql.OrderByDescending(x => x.Name);
+                    break;
+                case "name_asc":
+                    clientsSql = clientsSql.OrderBy(x => x.Name);
+                    break;
+                case "birthday_desc":
+                    clientsSql = clientsSql.OrderByDescending(x => x.Birthday);
+                    break;
+                case "birthday_asc":
+                    clientsSql = clientsSql.OrderBy(x => x.Birthday);
+                    break;
+                case "email_asc":
+                    clientsSql = clientsSql.OrderBy(x => x.Email);
+                    break;
+                case "email_desc":
+                    clientsSql = clientsSql.OrderByDescending(x => x.Email);
+                    break;
+                case "active_asc":
+                    clientsSql = clientsSql.OrderBy(x => x.Active);
+                    break;
+                case "active_desc":
+                    clientsSql = clientsSql.OrderByDescending(x => x.Active);
+                    break;
+            }
+
+            ViewData["NameSort"] =  (sort == "name_desc") ? "name_asc" : "name_desc";
+            ViewData["BirthdaySort"] = (sort == "birthday_desc") ? "birthday_asc" : "birthday_desc";
+            ViewData["EmailSort"] = (sort == "email_desc") ? "email_asc" : "email_desc";
+            ViewData["ActiveSort"] = (sort == "active_desc") ? "active_asc" : "active_desc";
+
+
+            int pageSize = 3;
+
+            var clients = await PaginatedList<Client>.CreateAsync(clientsSql, pageNumber ?? 1, pageSize);
+
+
+            return View(clients);
+                          
         }
 
         // GET: Clients/Details/5
