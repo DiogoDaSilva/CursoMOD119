@@ -1,12 +1,13 @@
 ﻿@using CursoMOD119.Lib;
-@model PaginatedList<CursoMOD119.Models.Client>
+@*@model PaginatedList<CursoMOD119.Models.Client>*@
+@model IEnumerable<Client>
 
 @{
     ViewData["Title"] = "Index";
 
-    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-    var pageNumber = (int)ViewData["PageNumber"];
+    //var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    //var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+    //var pageNumber = (int)ViewData["PageNumber"];
 }
 
 <h1>Index</h1>
@@ -70,7 +71,7 @@
     </tbody>
 </table>
 
-<nav aria-label="Page navigation example">
+@*<nav aria-label="Page navigation example">
     <ul class="pagination">
         <li class="page-item @prevDisabled">
             <a asp-action="Index"
@@ -93,4 +94,42 @@
                class="page-link">@SharedLocalizer["Next"]</a>
         </li>
     </ul>
-</nav>
+</nav>*@
+
+
+@(
+Html
+    .Grid(Model)
+    .Build(columns =>
+        {
+            columns.Add(Model => Model.Name).Titled(SharedLocalizer["Name"].Value);
+
+            columns.Add(Model => Model.Birthday).Titled(SharedLocalizer["Birthday"]).Formatted("{0:d}");
+            columns.Add(Model => Model.Email).Titled(SharedLocalizer["Email"]);
+            columns.Add(Model => Model.Active)
+                .Titled(SharedLocalizer["Active"])
+                .RenderedAs(Model => (Model.Active == true ? SharedLocalizer["Yes"].Value : SharedLocalizer["No"].Value))
+                .UsingFilterOptions(new[]
+                {
+                    new SelectListItem { Value = "true", Text = SharedLocalizer["Yes"].Value },
+                    new SelectListItem { Value = "false", Text = SharedLocalizer["No"].Value },
+                });
+
+            columns.Add(Model => Model.Active)
+                .Titled(SharedLocalizer["Active"])
+                .RenderedAs(Model => Html.DisplayFor(x => Model.Active));
+
+            columns.Add(Model => Html.ActionLink(SharedLocalizer["Edit"].Value, "Edit", new { id = Model.ID }));
+            columns.Add(Model => Html.ActionLink(SharedLocalizer["Details"].Value, "Details", new { id = Model.ID }));
+            columns.Add(Model => Html.ActionLink(SharedLocalizer["Delete"].Value, "Delete", new { id = Model.ID }));
+        }
+    )
+    .Filterable()
+    .Pageable(pager =>
+    {
+        pager.PageSizes = new Dictionary<Int32, String> { { 0, "All" }, { 2, "2" }, { 4, "4" } };
+        pager.ShowPageSizes = true;
+        pager.PagesToDisplay = 3;
+        pager.RowsPerPage = 2;
+    })
+)
