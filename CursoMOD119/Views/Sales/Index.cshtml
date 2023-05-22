@@ -9,7 +9,7 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+@*<table class="table">
     <thead>
         <tr>
             <th>
@@ -45,7 +45,7 @@
             </tr>
         }
     </tbody>
-</table>
+</table>*@
 
 @(
 Html
@@ -61,16 +61,24 @@ Html
             columns.Add(Model => Model.Client.Name).Titled(SharedLocalizer["Client"]);
 
             columns.Add(Model => Html.ActionLink(SharedLocalizer["Edit"].Value, "Edit", new { id = Model.ID }));
-            columns.Add(Model => Html.ActionLink(SharedLocalizer["Details"].Value, "Details", new { id = Model.ID }));
-            columns.Add(Model => Html.ActionLink(SharedLocalizer["Delete"].Value, "Delete", new { id = Model.ID }));
+            
+            if (User.IsInRole(AppConstants.OPERATIVE_ROLE))
+            {
+                columns.Add(Model => Html.ActionLink(SharedLocalizer["Details"].Value, "Details", new { id = Model.ID }));
+            }
+            if (User.IsInRole(AppConstants.ADMIN_ROLE)) {
+                columns.Add(Model => Html.ActionLink(SharedLocalizer["Delete"].Value, "Delete", new { id = Model.ID }));
+            }
 
             
 
-            columns.Add().RenderedAs(Model => 
+            
+
+            @*columns.Add().RenderedAs(Model => 
                 "<a href=\"Sales/Edit/" + Model.ID + "\">" + SharedLocalizer["Edit"].Value + "</a>&nbsp;&nbsp;"
                 + "<a href=\"Sales/Details/" + Model.ID + "\">" + SharedLocalizer["Details"].Value + "</a> &nbsp;&nbsp;"
                 + "<a href=\"Sales/Delete/" + Model.ID + "\">" + SharedLocalizer["Delete"].Value + "</a>"
-            ).Encoded(false);
+            ).Encoded(false);*@
 
             @*columns.Add(Model => Html.ActionLink(SharedLocalizer["Edit"].Value, "Edit", new { id = Model.ID }) + " , " + Html.ActionLink(SharedLocalizer["Details"].Value, "Details", new { id = Model.ID }) + " | " + Html.ActionLink(SharedLocalizer["Delete"].Value, "Delete", new { id = Model.ID }))
             .Encoded(false);*@

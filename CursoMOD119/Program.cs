@@ -1,6 +1,7 @@
 using CursoMOD119;
 using CursoMOD119.Data;
 using CursoMOD119.Data.Seed;
+using CursoMOD119.Lib;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -34,6 +35,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AppConstants.APP_POLICY, policy => policy.RequireRole(AppConstants.APP_POLICY_ROLES));
+    options.AddPolicy(AppConstants.APP_ADMIN_POLICY, policy => policy.RequireRole(AppConstants.APP_ADMIN_POLICY_ROLES));
+});
+
+
 // Apagar
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 //    .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -42,14 +50,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-
 const string defaultCulture = "pt";
 
 var ptCI = new CultureInfo(defaultCulture);
-//ptCI.NumberFormat.NumberDecimalSeparator = ".";
-//ptCI.NumberFormat.NumberGroupSeparator = " ";
-//ptCI.NumberFormat.CurrencyDecimalSeparator = ".";
-//ptCI.NumberFormat.CurrencyGroupSeparator = " ";
 
 var supportedCultures = new[]
 {
@@ -57,7 +60,6 @@ var supportedCultures = new[]
     new CultureInfo("en"),
     new CultureInfo("fr")
 };
-
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -74,11 +76,6 @@ builder.Services
     {
         options.DataAnnotationLocalizerProvider = (type, factory) =>
             factory.Create(typeof(Resource));
-    })
-    .AddNToastNotifyToastr(new NToastNotify.ToastrOptions
-    {
-        ProgressBar = true,
-        TimeOut = 5000
     });
 
 var app = builder.Build();
@@ -102,7 +99,9 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
+app.UseRequestLocalization(
+    app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value
+);
 
 app.UseNToastNotify();
 
